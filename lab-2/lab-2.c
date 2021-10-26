@@ -26,14 +26,15 @@ uint1024_t from_uint(unsigned int x) {
     big_int.data = malloc(big_int_size * sizeof(int32_t));
     big_int.size = big_int_size;
     big_int.data[0] = x % base;
-    if (big_int_size > 1) big_int.data[1] = x / base;
+    if (big_int_size > 1)
+        big_int.data[1] = x / base;
     return big_int;
 }
 
 void printf_value(uint1024_t x) {
     // Выводим самый последний элемент вектора (или 0, если вектор пустой).
     // Затем выводим все оставшиеся элементы вектора, дополняя их нулями до 9 символов.
-    int arr_sz;
+    int arr_sz = x.size;
     if (arr_sz != 0)
         printf("%d", x.data[arr_sz - 1]);
     else
@@ -59,13 +60,20 @@ void scanf_value(uint1024_t *x) {
     for (int i = number_len, j = 0; i > 0; i -= 9, j++) {
         str[i] = 0;
         if (i >= 9)
-            inp.data[j] = str + i - 9;
+            inp.data[j] = atoi(str + i - 9);
         else
-            inp.data[j] = str;
+            inp.data[j] = atoi(str);
     }
     *x = inp;
 }
 
 int main() {
+    uint1024_t num1, num2;
+    printf("Введите первое число\n");
+    scanf_value(&num1);
+    printf("Введите второе число\n");
+    scanf_value(&num2);
+    printf_value(num1);
+    printf_value(num2);
     return 0;
 }
