@@ -17,6 +17,19 @@ typedef struct {
     int32_t *data;
 } uint1024_t;
 
+
+uint1024_t from_uint(unsigned int x) {
+    int big_int_size;
+    if (x >= base) big_int_size = 2;
+    else big_int_size = 1;
+    uint1024_t big_int;
+    big_int.data = malloc(big_int_size * sizeof(int32_t));
+    big_int.size = big_int_size;
+    big_int.data[0] = x % base;
+    if (big_int_size > 1) big_int.data[1] = x / base;
+    return big_int;
+}
+
 void printf_value(uint1024_t x) {
     // Выводим самый последний элемент вектора (или 0, если вектор пустой).
     // Затем выводим все оставшиеся элементы вектора, дополняя их нулями до 9 символов.
