@@ -1,6 +1,7 @@
 //
 // Created by Eldar Kasymov on 21.10.2021.
 //
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -73,31 +74,42 @@ uint1024_t add_op(uint1024_t x, uint1024_t y) {
     int size = max(x.size, y.size);
     sum.data = malloc(size * sizeof(int32_t));
     sum.size = size;
-    for (int i = 0; i <= size; i++) {
+    for (int i = 0; i < size; i++) {
+        if (i == size) {
+            sum.data = realloc(sum.data, (size + 1) * sizeof(int32_t));
+            sum.data[size] = 0;
+            sum.size++;
+        }
         sum.data[i] = x.data[i] + y.data[i] + overflow;
-        if (sum.data[i] >= base)
+        if (sum.data[i] >= base) {
             overflow = true;
-        if (overflow)
             sum.data[i] -= base;
-    }
-
-    if (overflow) {
-        sum.data = realloc(sum.data, (size + 1) * sizeof(int32_t));
-        sum.data[size] = 0;
-        sum.size++;
+        } else overflow = false;
     }
     return sum;
 }
 
 
-
 int main() {
     uint1024_t num1, num2;
-    printf("Введите первое число\n");
+    char input[320];
+    // Инициализация массива нулями
+    memset(input, 0, 320);
+    printf("[Введите первое число]:\n");
     scanf_value(&num1);
-    printf("Введите второе число\n");
+    printf("[Введите второе число]:\n");
     scanf_value(&num2);
-    printf_value(num1);
-    printf_value(num2);
+    fseek(stdin, 0, SEEK_END);
+    while (true) {
+        printf("[Выберите операцию: + - *]\n-----------ИЛИ-----------\n[Введите stop для завершения]\n");
+        scanf("%c", input);
+        if (!strcmp(input, "+")) num1 = add_op(num1, num2);
+        else break;
+        printf_value(num1);
+        fseek(stdin, 0, SEEK_END);
+        printf("\nВведите новое число\n");
+        scanf_value(&num2);
+        fseek(stdin, 0, SEEK_END);
+    }
     return 0;
 }
