@@ -136,8 +136,8 @@ uint1024_t mult_op(uint1024_t x, uint1024_t y) {
     // Цикл по количеству цифр в первом числе.
     for (int i = 0; i < x.size; i++)
         // Цикл по количеству цифр во втором числе.
-        for (int j = 0, carry = 0; j < y.size; j++) {
-            long long t = comp.data[i + j] + x.data[i] * y.data[j] * 1ll + carry;
+        for (int j = 0, carry = 0; j < y.size || carry; j++) {
+            long long t = comp.data[i + j] + x.data[i] * 1ll * y.data[j] + carry;
             // Значение цифры в рязряде i + j.
             comp.data[i + j] = (int) (t % base);
             // Перенос в следующий разряд.
