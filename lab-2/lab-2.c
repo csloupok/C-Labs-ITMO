@@ -89,6 +89,27 @@ uint1024_t add_op(uint1024_t x, uint1024_t y) {
     return sum;
 }
 
+uint1024_t subtr_op(uint1024_t x, uint1024_t y) {
+    uint1024_t diff;
+    bool underflow = false;
+    int size = max(x.size, y.size);
+    diff.data = malloc(size * sizeof(int32_t));
+    diff.size = size;
+    for (int i = 0; i < size; i++) {
+        if (i == size)
+            break;
+        diff.data[i] = x.data[i] - y.data[i] - underflow;
+        if (diff.data[i] < 0) {
+            underflow = true;
+            diff.data[i] += base;
+        } else underflow = false;
+    }
+    // Убираем лишние ячейки с нулями.
+    while (diff.data[diff.size - 1] == 0 && diff.size > 1)
+        diff.size--;
+    diff.data = realloc(diff.data, diff.size * sizeof(int32_t));
+    return diff;
+}
 
 int main() {
     uint1024_t num1, num2;
@@ -99,17 +120,18 @@ int main() {
     scanf_value(&num1);
     printf("[Введите второе число]:\n");
     scanf_value(&num2);
-    fseek(stdin, 0, SEEK_END);
+    fseek(stdin, 0, SEEK_SET);
     while (true) {
         printf("[Выберите операцию: + - *]\n-----------ИЛИ-----------\n[Введите stop для завершения]\n");
         scanf("%c", input);
         if (!strcmp(input, "+")) num1 = add_op(num1, num2);
+        else if (!strcmp(input, "-")) num1 = subtr_op(num1, num2);
         else break;
         printf_value(num1);
-        fseek(stdin, 0, SEEK_END);
+        fseek(stdin, 0, SEEK_SET);
         printf("\nВведите новое число\n");
         scanf_value(&num2);
-        fseek(stdin, 0, SEEK_END);
+        fseek(stdin, 0, SEEK_SET);
     }
     return 0;
 }
