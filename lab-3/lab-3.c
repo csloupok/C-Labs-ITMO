@@ -25,10 +25,17 @@ long long dateConvert(char *str) {
     return mktime(&time);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("неправильно введена команда");
+        return 1;
+    }
+    char *input;
     long long window;
-    window = 10;
-    FILE *fin = fopen("/Users/eldarkasymov/CLionProjects/Progs/lab-3/access_log_Jul95", "r");
+    input = argv[1];
+    window = atoll(argv[2]);
+
+    FILE *fin = fopen(input, "r");
     if (!fin) {
         printf("не читается файл\n");
         return 1;
