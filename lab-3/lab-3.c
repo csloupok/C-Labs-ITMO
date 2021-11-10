@@ -26,6 +26,8 @@ long long dateConvert(char *str) {
 }
 
 int main() {
+    long long window;
+    window = 10;
     FILE *fin = fopen("/Users/eldarkasymov/CLionProjects/Progs/lab-3/access_log_Jul95", "r");
     if (!fin) {
         printf("не читается файл\n");
@@ -35,7 +37,7 @@ int main() {
     long long time_allocated = 1000;
     //Массив на res_allocated строк, если больше - делаем realloc
     char **res = (char **) malloc(res_allocated * sizeof(char *));
-    //Массив для хранения времени запроса в секундах для подсчета максимального количества запросов в промежутке [a; a+t]
+    //Массив для хранения времени запроса в секундах для подсчета максимального количества запросов в промежутке
     long long *time = malloc(time_allocated * sizeof(long long));
     //Максимальная длина HTTP запроса = 2048 + \n = 2049
     char line[2049];
@@ -69,9 +71,33 @@ int main() {
             strcpy(res[error_count++], line + i);
         }
     }
+    long long left_border = 0, current_window = 0;
+    long long time_stamp1 = time[0], time_stamp2 = time[0];
+    long long request_count = 1, request_max = 0;
+    long long line_start = 0, line_end = 0;
+    for (long long i = 1; i < line_count; i++)
+    {
+        current_window += time[i] - time[i - 1];
+        request_count++; 
+        while (current_window > window && left_border + 1 < line_count) {
+            current_window -= time[left_border + 1] - time[left_border];
+            left_border++;
+            request_count--;
+        }
+        if (request_count > request_max) {
+            time_stamp1 = time[left_border];
+            time_stamp2 = time[i];
+            request_max = request_count;
+            line_start = left_border;
+            line_end = i;
+        }
+    }
     fclose(fin);
     free(time);
-    printf("\nКоличество ошибок: %lld\n\n", error_count);
+    printf("\nВременное окно в [%lld] секунд:\n[%lld до %lld]\nмаксимальное число запросов в этом окне: [%lld]\nв строках: [%lld - %lld]\n",
+           window, time_stamp1, time_stamp2, request_max, line_start + 1, line_end + 1);
+    printf("\nКоличество ошибок: [%lld]\n\n", error_count);
+
     if (error_count) {
         for (long long i = 0; i < error_count; i++) {
             printf("%s\n", res[i]);
