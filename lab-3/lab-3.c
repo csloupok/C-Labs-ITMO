@@ -82,10 +82,9 @@ int main(int argc, char *argv[]) {
     long long time_stamp1 = time[0], time_stamp2 = time[0];
     long long request_count = 1, request_max = 0;
     long long line_start = 0, line_end = 0;
-    for (long long i = 1; i < line_count; i++)
-    {
+    for (long long i = 1; i < line_count; i++) {
         current_window += time[i] - time[i - 1];
-        request_count++; 
+        request_count++;
         while (current_window > window && left_border + 1 < line_count) {
             current_window -= time[left_border + 1] - time[left_border];
             left_border++;
