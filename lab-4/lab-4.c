@@ -19,7 +19,7 @@ typedef struct Frame {
     unsigned char flags[2];
 } id3v2_frame;
 
-void change_frame_size(uint32_t new_size, unsigned char *res) {
+void change_frame_size(int new_size, unsigned char *res) {
     for (int i = 3; i > -1; i--) {
         res[i] = new_size % 128;
         new_size /= 128;
@@ -42,10 +42,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    uint8_t show_flag = 0, get_flag = 0, set_flag = 0;
+    int show_flag = 0, get_flag = 0, set_flag = 0;
     char *field_ptr;
     char *value_ptr;
-    uint32_t value_size = 0;
+    int value_size = 0;
 
     for (int i = 2; i < argc; i++) {
         if (strcmp(argv[i], "--show") == 0) {
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     char header_id[4];
-    uint32_t header_size;
+    int header_size;
     id3v2_header header;
     fread(&header, sizeof(char), sizeof(header), fin);
     //Перевод из байтов в инт
@@ -82,11 +82,11 @@ int main(int argc, char *argv[]) {
     header_id[3] = '\0';
     printf("header: %sv2.%x.%x; %d bytes\n", header_id, header.version, header.subversion, header_size);
 
-    uint8_t frames_end = 0;
-    uint32_t byte_sum = 0;
-    uint64_t last_ptr = 0;
+    int frames_end = 0;
+    int byte_sum = 0;
+    int last_ptr = 0;
     while (byte_sum < header_size) {
-        uint64_t frame_size = 0;
+        int frame_size = 0;
         char frame_id[5];
         char frame_encoding;
         id3v2_frame frame;
@@ -117,17 +117,15 @@ int main(int argc, char *argv[]) {
         if (set_flag && (strcmp(field_ptr, frame_id) == 0)) {
             change_frame_size(value_size + 1, frame.size);
             // сохраняем текущую позицию в файле
-            uint32_t file_ptr = ftell(fin);
+            int file_ptr = ftell(fin);
             fseek(fin, frame_size - 1, SEEK_CUR);
             char *buf = calloc(header_size - file_ptr - value_size, sizeof(char));
             fread(buf, sizeof(char), header_size - file_ptr - value_size, fin);
-            fflush(fin);
 
             char x[1];
             x[0] = '\0';
             fseek(fin, file_ptr - 1, SEEK_SET);
             fwrite(x, sizeof(char), 1, fin);
-            fflush(fin);
 
             // переписываем тэг
             fseek(fin, file_ptr, SEEK_SET);
@@ -139,12 +137,11 @@ int main(int argc, char *argv[]) {
             // пишем новый размер фрейма
             fseek(fin, file_ptr - 7 , SEEK_SET);
             fwrite(frame.size, sizeof(char), sizeof(frame.size), fin);
-            fflush(fin);
             fclose(fin);
             free(buf);
             return 0;
         }
-        if (frame_encoding == 0 || frame_encoding == 3) {
+        if (frame_encoding == 0) {
             char temp[frame_size];
             fgets(temp, (int) frame_size, fin);
             if (show_flag) {
@@ -187,6 +184,16 @@ int main(int argc, char *argv[]) {
             } else if (set_flag) {
                 wchar_t temp[frame_size];
                 fgetws(temp, (int) frame_size / 2, fin);
+            }
+
+        } else if (frame_encoding == 3) {
+            char temp[frame_size];
+            fgets(temp, (int) frame_size, fin);
+            if (show_flag) {
+                printf("%s %s\n", frame_id, temp);
+            } else if (get_flag && (strcmp(field_ptr, frame_id) == 0)) {
+                printf("%s %s\n", frame_id, temp);
+                return 0;
             }
         }
         last_ptr = ftell(fin);
